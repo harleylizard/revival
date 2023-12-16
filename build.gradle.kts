@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("io.freefair.lombok") version "8.4"
+    `maven-publish`
 }
 
 group = "com.harleylizard"
@@ -9,6 +10,7 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     maven("https://libraries.minecraft.net/")
+    maven("https://repo.spongepowered.org/repository/maven-public/")
 }
 
 dependencies {
@@ -16,6 +18,8 @@ dependencies {
     implementation("net.minecraft:launchwrapper:1.5")
     implementation("com.google.code.gson:gson:2.10.1")
     // implementation("commons-io:commons-io:2.15.1")
+    implementation("org.spongepowered:mixin:0.8.5-SNAPSHOT")
+    implementation("com.google.guava:guava:32.1.3-jre")
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")

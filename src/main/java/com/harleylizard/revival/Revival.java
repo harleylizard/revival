@@ -5,6 +5,9 @@ import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.*;
 import java.util.List;
 import java.util.function.Predicate;
@@ -16,35 +19,71 @@ public final class Revival {
 
     {
         try {
-            loadAll();
+            loadModifications();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-    private void loadAll() throws IOException {
-        ClassLoader classLoader = Revival.class.getClassLoader();
+    private void loadModifications() throws IOException {
+        RevivalClassLoader classLoader = new RevivalClassLoader(Revival.class.getClassLoader());
 
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(Modification.class, new Modification.Deserializer())
+                .registerTypeAdapter(Options.class, new Options.Deserializer())
                 .create();
 
-        for (Path path : searchForJars()) {
+        Options options = options(gson);
+
+        for (Path path : searchFor()) {
             try (FileSystem fileSystem = FileSystems.newFileSystem(path, classLoader)) {
-                Modification modification = readJson(gson, fileSystem);
+                loadClasses(fileSystem, classLoader);
+
+                Modification modification = read(options, gson, fileSystem);
+
+                try {
+                    initialise(modification, classLoader);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // MixinBootstrap.init();
+    }
+
+    private void initialise(Modification modification, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String name = modification.getEntryPoints().get("common");
+        Class<?> klass = classLoader.loadClass(name);
+        Constructor<?> constructor = klass.getConstructor();
+
+        Entrypoint entrypoint = (Entrypoint) constructor.newInstance();
+    }
+
+    private void loadClasses(FileSystem fileSystem, RevivalClassLoader classLoader) throws IOException {
+        try (Stream<Path> stream = Files.walk(fileSystem.getPath("/"))
+                .filter(Files::isRegularFile)
+                .filter(path -> path.toString().endsWith(".class"))) {
+            for (Path path : stream.collect(Collectors.toList())) {
+                byte[] bytes = Files.readAllBytes(path);
+
+                String name = path.toString();
+                name = name.substring(1, name.lastIndexOf(".class")).replace("/", ".");
+
+                classLoader.defineClass(name, bytes);
             }
         }
     }
 
-    private Modification readJson(Gson gson, FileSystem fileSystem) throws IOException {
-        Path jsonPath = Files.walkFileTree(fileSystem.getPath("modification.json"), new DefaultVisitor() {});
+    private Modification read(Options options, Gson gson, FileSystem fileSystem) throws IOException {
+        Path jsonPath = Files.walkFileTree(fileSystem.getPath(options.getFileName()), DefaultVisitor.DEFAULT_VISITOR);
 
         try (BufferedReader reader = Files.newBufferedReader(jsonPath)) {
             return gson.fromJson(reader, Modification.class);
         }
     }
     
-    private List<Path> searchForJars() throws IOException {
+    private List<Path> searchFor() throws IOException {
         try (Stream<Path> stream = Files.walk(mods, FileVisitOption.FOLLOW_LINKS).filter(path -> ThrowablePredicate.wrap(this::filter).test(path))) {
             return stream.collect(Collectors.toList());
         }
@@ -62,6 +101,12 @@ public final class Revival {
         return false;
     }
 
+    private Options options(Gson gson) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Resources.get("options.json")))) {
+            return gson.fromJson(reader, Options.class);
+        }
+    }
+
     @FunctionalInterface
     private interface ThrowablePredicate<J, T extends Throwable> {
 
@@ -75,6 +120,17 @@ public final class Revival {
                     return false;
                 }
             };
+        }
+    }
+
+    public static final class RevivalClassLoader extends ClassLoader {
+
+        private RevivalClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        public Class<?> defineClass(String name, byte[] bytes) {
+            return defineClass(name, bytes, 0, bytes.length);
         }
     }
 }

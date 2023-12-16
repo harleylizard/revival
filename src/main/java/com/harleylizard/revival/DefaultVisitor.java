@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public interface DefaultVisitor extends FileVisitor<Path> {
+    DefaultVisitor DEFAULT_VISITOR = new DefaultVisitor() {};
 
     @Override
     default FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
