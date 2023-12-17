@@ -63,6 +63,7 @@ public final class Revival {
     }
 
     private void loadClasses(FileSystem fileSystem, RevivalClassLoader classLoader) throws IOException {
+
         try (Stream<Path> stream = Files.walk(fileSystem.getPath("/"))
                 .filter(Files::isRegularFile)
                 .filter(path -> path.toString().endsWith(".class"))) {
