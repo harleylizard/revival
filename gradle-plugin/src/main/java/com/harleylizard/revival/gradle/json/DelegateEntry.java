@@ -6,6 +6,6 @@ import java.util.Map;
 
 @Data
 public final class DelegateEntry {
-    private final String klass;
+    private final String name;
     private final Map<String, String> fields;
 }

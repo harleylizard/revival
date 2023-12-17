@@ -63,23 +63,25 @@ public final class Util {
     private Path createProguardMappings(Project project, Path jarPath) throws IOException {
         Path path = getPath(project).resolve("proguard.mappings");
 
+
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             Delegate delegate = getDelegate();
+            Map<String, DelegateEntry> map = delegate.getMap();
 
             writer.write("#\n");
             for (Map.Entry<String, String> entry : getNames(jarPath).entrySet()) {
                 String name = entry.getKey();
 
-                if (!delegate.contains(name)) {
+                if (!map.containsKey(name)) {
                     String namespace = delegate.getNamespace();
 
                     writer.write(String.format("%s.%s -> %s:\n", namespace, name, name));
                     continue;
                 }
 
-                Map.Entry<String, DelegateEntry> mapEntry = delegate.get(name);
+                DelegateEntry delegateEntry = map.get(name);
 
-                String formatted = String.format("%s -> %s:\n", mapEntry.getKey(), mapEntry.getValue().getKlass());
+                String formatted = String.format("%s -> %s:\n", delegateEntry.getName(), name);
                 writer.write(formatted);
             }
             writer.flush();
