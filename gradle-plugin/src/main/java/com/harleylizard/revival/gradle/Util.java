@@ -65,18 +65,22 @@ public final class Util {
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             Delegate delegate = getDelegate();
-            Map<String, DelegateEntry> map = delegate.getMap();
 
             writer.write("#\n");
             for (Map.Entry<String, String> entry : getNames(jarPath).entrySet()) {
                 String name = entry.getKey();
 
-                if (!map.containsKey(name)) {
+                if (!delegate.contains(name)) {
                     String namespace = delegate.getNamespace();
 
                     writer.write(String.format("%s.%s -> %s:\n", namespace, name, name));
                     continue;
                 }
+
+                Map.Entry<String, DelegateEntry> mapEntry = delegate.get(name);
+
+                String formatted = String.format("%s -> %s:\n", mapEntry.getKey(), mapEntry.getValue().getKlass());
+                writer.write(formatted);
             }
             writer.flush();
             return path;

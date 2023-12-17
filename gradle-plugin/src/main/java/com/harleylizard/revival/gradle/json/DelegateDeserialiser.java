@@ -17,7 +17,7 @@ public final class DelegateDeserialiser implements JsonDeserializer<Delegate> {
         for (Map.Entry<String, JsonElement> entry : jsonObject.getAsJsonObject("names").entrySet()) {
             DelegateEntry delegateEntry = jsonDeserializationContext.deserialize(entry.getValue(), DelegateEntry.class);
 
-            map.put(delegateEntry.getKlass(), delegateEntry);
+            map.put(entry.getKey(), delegateEntry);
         }
 
         return new Delegate(

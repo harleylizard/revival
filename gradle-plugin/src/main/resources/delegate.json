@@ -1,5 +1,20 @@
 {
   "namespace": "net.minecraft",
   "names": {
+    "net.minecraft.entity.Entity": { "class": "sn" },
+    "net.minecraft.entity.EntityTypes": { "class": "jc" },
+    "net.minecraft.entity.Zombie": { "class": "uz" },
+    "net.minecraft.entity.ZombiePigMan": { "class": "ya" },
+    "net.minecraft.entity.Spider": { "class": "cn" },
+    "net.minecraft.entity.Skeleton": { "class": "fr" },
+    "net.minecraft.entity.Creeper": { "class": "gb" },
+    "net.minecraft.entity.Slime": { "class": "uw" },
+    "net.minecraft.entity.Ghast": { "class": "bp" },
+    "net.minecraft.entity.Giant": { "class": "nt" },
+    "net.minecraft.entity.Cow": { "class": "bx" },
+    "net.minecraft.entity.Pig": { "class": "wh" },
+    "net.minecraft.entity.Chicken": { "class": "ww" },
+    "net.minecraft.entity.Sheep": { "class": "dl" },
+    "net.minecraft.entity.Squid": { "class": "xt" }
   }
 }
