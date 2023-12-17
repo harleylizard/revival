@@ -2,10 +2,10 @@ package com.harleylizard.revival.gradle;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.harleylizard.revival.gradle.json.Delegate;
-import com.harleylizard.revival.gradle.json.DelegateDeserialiser;
-import com.harleylizard.revival.gradle.json.DelegateEntry;
-import com.harleylizard.revival.gradle.json.DelegateEntryDeserialiser;
+import com.harleylizard.revival.gradle.json.Mappings;
+import com.harleylizard.revival.gradle.json.MappingsDeserialiser;
+import com.harleylizard.revival.gradle.json.MappingsEntry;
+import com.harleylizard.revival.gradle.json.MappingsEntryDeserialiser;
 import cuchaz.enigma.Enigma;
 import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
@@ -63,41 +63,51 @@ public final class Util {
     private Path createProguardMappings(Project project, Path jarPath) throws IOException {
         Path path = getPath(project).resolve("proguard.mappings");
 
-
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            Delegate delegate = getDelegate();
-            Map<String, DelegateEntry> map = delegate.getMap();
+            Mappings mappings = getDelegate();
+            Map<String, MappingsEntry> map = mappings.getMap();
 
             writer.write("#\n");
             for (Map.Entry<String, String> entry : getNames(jarPath).entrySet()) {
                 String name = entry.getKey();
 
                 if (!map.containsKey(name)) {
-                    String namespace = delegate.getNamespace();
+                    String namespace = mappings.getNamespace();
 
                     writer.write(String.format("%s.%s -> %s:\n", namespace, name, name));
                     continue;
                 }
 
-                DelegateEntry delegateEntry = map.get(name);
+                MappingsEntry mappingsEntry = map.get(name);
 
-                String formatted = String.format("%s -> %s:\n", delegateEntry.getName(), name);
+                String formatted = String.format("%s -> %s:\n", mappingsEntry.getName(), name);
                 writer.write(formatted);
+
+                Map<String, String> fields = mappingsEntry.getFields();
+                if (!fields.isEmpty()) {
+                    for (Map.Entry<String, String> fieldEntry : fields.entrySet()) {
+                        String[] split = fieldEntry.getValue().split(":", 2);
+
+                        formatted = String.format("    %s %s -> %s\n", split[0], split[1], fieldEntry.getKey());
+
+                        writer.write(formatted);
+                    }
+                }
             }
             writer.flush();
             return path;
         }
     }
 
-    private Delegate getDelegate() throws IOException {
+    private Mappings getDelegate() throws IOException {
         Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Delegate.class, new DelegateDeserialiser())
-                .registerTypeAdapter(DelegateEntry.class, new DelegateEntryDeserialiser())
+                .registerTypeAdapter(Mappings.class, new MappingsDeserialiser())
+                .registerTypeAdapter(MappingsEntry.class, new MappingsEntryDeserialiser())
                 .create();
 
-        String path = "delegate.json";
+        String path = "mappings.json";
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(path)))) {
-            return gson.fromJson(reader, Delegate.class);
+            return gson.fromJson(reader, Mappings.class);
         }
     }
 

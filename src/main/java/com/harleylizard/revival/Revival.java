@@ -21,6 +21,10 @@ public final class Revival {
 
     {
         try {
+            if (!Files.isDirectory(mods)) {
+                Files.createDirectories(mods);
+            }
+
             loadModifications(Environment.COMMON);
         } catch (IOException e) {
             e.printStackTrace();

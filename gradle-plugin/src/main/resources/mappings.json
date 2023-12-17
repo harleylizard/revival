@@ -1,0 +1,41 @@
+{
+  "namespace": "net.minecraft",
+  "names": {
+    "ij": "net.minecraft.tag.Tag",
+    "hn": "net.minecraft.tag.ByteArrayTag",
+    "lh": "net.minecraft.tag.EndTag",
+    "mi": "net.minecraft.tag.LongTag",
+    "p": "net.minecraft.tag.FloatTag",
+    "pp": "net.minecraft.tag.IntTag",
+    "qp": "net.minecraft.tag.ByteTag",
+    "sp": "net.minecraft.tag.ListTag",
+    "sz": "net.minecraft.tag.DoubleTag",
+    "ul": "net.minecraft.tag.ShortTag",
+    "xb": "net.minecraft.tag.StringTag",
+    "nu": "net.minecraft.tag.CompoundTag",
+
+    "sn": "net.minecraft.entity.Entity",
+    "uz": "net.minecraft.entity.Zombie",
+    "ya": "net.minecraft.entity.ZombiePigMan",
+    "cn": "net.minecraft.entity.Spider",
+    "fr": "net.minecraft.entity.Skeleton",
+    "gb": "net.minecraft.entity.Creeper",
+    "uw": "net.minecraft.entity.Slime",
+    "bp": "net.minecraft.entity.Ghast",
+    "nt": "net.minecraft.entity.Giant",
+    "bx": "net.minecraft.entity.Cow",
+    "wh": "net.minecraft.entity.Pig",
+    "ww": "net.minecraft.entity.Chicken",
+    "dl": "net.minecraft.entity.Sheep",
+    "xl": "net.minecraft.entity.Squid",
+
+    "uu": {
+      "name": "net.minecraft.block.Block",
+      "fields": {
+        "m": "net.minecraft.block.Block[]:BLOCKS"
+      }
+    },
+
+    "iz": "net.minecraft.item.ItemStack"
+  }
+}

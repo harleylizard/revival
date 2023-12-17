@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public final class Delegate {
+public final class Mappings {
     private final String namespace;
-    private final Map<String, DelegateEntry> map;
+    private final Map<String, MappingsEntry> map;
 }

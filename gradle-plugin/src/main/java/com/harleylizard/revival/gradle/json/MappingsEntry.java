@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public final class DelegateEntry {
+public final class MappingsEntry {
     private final String name;
     private final Map<String, String> fields;
 }

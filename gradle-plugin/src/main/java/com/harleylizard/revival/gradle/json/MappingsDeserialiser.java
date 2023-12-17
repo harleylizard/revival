@@ -7,20 +7,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class DelegateDeserialiser implements JsonDeserializer<Delegate> {
+public final class MappingsDeserialiser implements JsonDeserializer<Mappings> {
     @Override
-    public Delegate deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+    public Mappings deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         JsonObject jsonObject = jsonElement.getAsJsonObject();
 
-        Map<String, DelegateEntry> map = new HashMap<>();
+        Map<String, MappingsEntry> map = new HashMap<>();
 
         for (Map.Entry<String, JsonElement> entry : jsonObject.getAsJsonObject("names").entrySet()) {
-            DelegateEntry delegateEntry = jsonDeserializationContext.deserialize(entry.getValue(), DelegateEntry.class);
+            MappingsEntry mappingsEntry = jsonDeserializationContext.deserialize(entry.getValue(), MappingsEntry.class);
 
-            map.put(entry.getKey(), delegateEntry);
+            map.put(entry.getKey(), mappingsEntry);
         }
 
-        return new Delegate(
+        return new Mappings(
                 jsonObject.getAsJsonPrimitive("namespace").getAsString(),
                 Collections.unmodifiableMap(map)
         );
