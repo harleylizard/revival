@@ -36,8 +36,17 @@ java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
 allprojects {
     apply(plugin = "java")
-
-
 }

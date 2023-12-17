@@ -2,6 +2,8 @@ package com.harleylizard.revival;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.harleylizard.revival.deserialiser.ModificationDeserialiser;
+import com.harleylizard.revival.deserialiser.OptionsDeserialiser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,18 +21,18 @@ public final class Revival {
 
     {
         try {
-            loadModifications();
+            loadModifications(Environment.COMMON);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
-    private void loadModifications() throws IOException {
+    private void loadModifications(Environment environment) throws IOException {
         RevivalClassLoader classLoader = new RevivalClassLoader(Revival.class.getClassLoader());
 
         Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Modification.class, new Modification.Deserializer())
-                .registerTypeAdapter(Options.class, new Options.Deserializer())
+                .registerTypeAdapter(Modification.class, new ModificationDeserialiser())
+                .registerTypeAdapter(Options.class, new OptionsDeserialiser())
                 .create();
 
         Options options = options(gson);
@@ -42,7 +44,7 @@ public final class Revival {
                 Modification modification = read(options, gson, fileSystem);
 
                 try {
-                    initialise(modification, classLoader);
+                    initialise(environment, modification, classLoader);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -52,8 +54,8 @@ public final class Revival {
         // MixinBootstrap.init();
     }
 
-    private void initialise(Modification modification, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        String name = modification.getEntryPoints().get("common");
+    private void initialise(Environment environment, Modification modification, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String name = modification.getEntryPoints().get(environment);
         Class<?> klass = classLoader.loadClass(name);
         Constructor<?> constructor = klass.getConstructor();
 
