@@ -15,6 +15,10 @@ public final class RevivalPlugin implements Plugin<Project> {
         repositories.maven(repository -> repository.setUrl("https://libraries.minecraft.net/"));
         repositories.maven(repository -> repository.setUrl("https://repo.spongepowered.org/repository/maven-public/"));
 
-        target.getTasks().create("remapClientJar", RemapClientJarTask.class);
+        try {
+            Util.apply(target);
+        } catch (Exception e) {
+            target.getLogger().error(e.getLocalizedMessage());
+        }
     }
 }

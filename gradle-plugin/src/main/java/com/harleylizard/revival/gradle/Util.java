@@ -7,11 +7,16 @@ import com.harleylizard.revival.gradle.json.DelegateDeserialiser;
 import com.harleylizard.revival.gradle.json.DelegateEntry;
 import com.harleylizard.revival.gradle.json.DelegateEntryDeserialiser;
 import cuchaz.enigma.Enigma;
+import cuchaz.enigma.EnigmaProject;
 import cuchaz.enigma.ProgressListener;
-import org.gradle.api.DefaultTask;
+import cuchaz.enigma.classprovider.ClasspathClassProvider;
+import cuchaz.enigma.translation.mapping.EntryMapping;
+import cuchaz.enigma.translation.mapping.serde.MappingFormat;
+import cuchaz.enigma.translation.mapping.serde.MappingParseException;
+import cuchaz.enigma.translation.mapping.tree.EntryTree;
+import lombok.experimental.UtilityClass;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
-import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.ClassReader;
 
 import java.io.*;
@@ -25,14 +30,16 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class RemapClientJarTask extends DefaultTask {
-    @TaskAction
-    public void run() throws IOException {
-        Project project = getProject();
+@UtilityClass
+public final class Util {
 
+    public void apply(Project project) throws IOException, MappingParseException {
         Path jarPath = downloadJar(project);
-        createProguardMappings(project, jarPath);
-        remapJar();
+        Path mappingsPath = createProguardMappings(project, jarPath);
+
+        remapJar(project,
+                jarPath,
+                mappingsPath);
     }
 
     private Path downloadJar(Project project) throws IOException {
@@ -53,17 +60,26 @@ public class RemapClientJarTask extends DefaultTask {
         }
     }
 
-    private void createProguardMappings(Project project, Path jarPath) throws IOException {
+    private Path createProguardMappings(Project project, Path jarPath) throws IOException {
         Path path = getPath(project).resolve("proguard.mappings");
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             Delegate delegate = getDelegate();
+            Map<String, DelegateEntry> map = delegate.getMap();
 
             writer.write("#\n");
             for (Map.Entry<String, String> entry : getNames(jarPath).entrySet()) {
+                String name = entry.getKey();
 
+                if (!map.containsKey(name)) {
+                    String namespace = delegate.getNamespace();
+
+                    writer.write(String.format("%s.%s -> %s:\n", namespace, name, name));
+                    continue;
+                }
             }
             writer.flush();
+            return path;
         }
     }
 
@@ -91,7 +107,7 @@ public class RemapClientJarTask extends DefaultTask {
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 String name = zipEntry.getName();
 
-                if (!name.endsWith(".class")) {
+                if (!name.endsWith(".class") || name.contains("/")) {
                     continue;
                 }
 
@@ -118,10 +134,24 @@ public class RemapClientJarTask extends DefaultTask {
         }
     }
 
-    private void remapJar() throws IOException {
+    private void remapJar(Project project, Path jarPath, Path mappingsPath) throws IOException, MappingParseException {
         Enigma enigma = Enigma.create();
 
         ProgressListener progressListener = new RevivalProgressListener();
+
+        EnigmaProject enigmaProject = enigma.openJar(jarPath, new ClasspathClassProvider(), progressListener);
+
+        EntryTree<EntryMapping> entryTree = MappingFormat.PROGUARD.read(mappingsPath, progressListener, enigma
+                .getProfile()
+                .getMappingSaveParameters());
+        enigmaProject.setMappings(entryTree);
+
+        Path path = getPath(project).resolve("client-remapped.jar");
+
+        EnigmaProject.JarExport jar = enigmaProject.exportRemappedJar(progressListener);
+        jar.write(path, progressListener);
+
+        project.getDependencies().add("implementation", project.files(path));
     }
 
     private Path getPath(Project project) throws IOException {

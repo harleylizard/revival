@@ -1,8 +1,5 @@
 {
-  "namespace": "com.mojang.minecraft",
+  "namespace": "net.minecraft",
   "names": {
-    "com.mojang.minecraft.entity.Entity": { "class": "sn" },
-    "com.mojang.minecraft.entity.Entities": { "class": "jc" },
-    "com.mojang.minecraft.entity.Zombie": { "class": "uz" }
   }
 }
